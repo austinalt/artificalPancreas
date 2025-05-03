@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Artificial Pancreas with AI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at top left, #5b0eeb, #12094c 80%);
+    color: #e0e0ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 15px;
+    overflow: hidden;
+  }
+  .container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 30px;
+    padding: 30px 30px 40px;
+    width: 100%;
+    max-width: 350px;
+    box-shadow:
+      0 0 30px #6e54f4,
+      inset 0 0 30px #b4a5ff;
+    text-align: center;
+    position: relative;
+    user-select: none;
+  }
+  .container::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 150px;
+    height: 150px;
+    background: #b78aff22;
+    border-radius: 50%;
+    filter: blur(90px);
+    z-index: 0;
+  }
+  .container::after {
+    content: '';
+    position: absolute;
+    bottom: -70px;
+    left: -50px;
+    width: 140px;
+    height: 140px;
+    background: #7c59ffa2;
+    border-radius: 50%;
+    filter: blur(60px);
+    z-index: 0;
+  }
+  h1 {
+    margin: 0 0 15px 0;
+    font-weight: 600;
+    font-size: 2.1rem;
+    letter-spacing: 1.5px;
+    color: #f3e8ff;
+    text-shadow:
+      0 0 10px #ac6eff99,
+      0 0 20px #ac6eff99;
+    position: relative;
+    z-index: 1;
+  }
+  p.subtitle {
+    font-weight: 300;
+    margin-bottom: 30px;
+    font-size: 1rem;
+    color: #d1c4ffcc;
+    letter-spacing: 0.7px;
+    position: relative;
+    z-index: 1;
+  }
+  label {
+    font-weight: 600;
+    font-size: 1rem;
+    display: block;
+    color: #b6a6f8;
+    margin-bottom: 10px;
+    text-align: left;
+    position: relative;
+    z-index: 1;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 15px 18px;
+    font-size: 1.15rem;
+    border-radius: 15px;
+    border: none;
+    outline: none;
+    transition: box-shadow 0.3s ease-in-out;
+    box-shadow:
+      inset 4px 4px 10px #4a37a0,
+      inset -4px -4px 10px #7f65ff;
+    color: #eee;
+    background: #3d2d8b;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+  }
+  input[type="number"]::placeholder {
+    color: #b9aaf8aa;
+  }
+  input[type="number"]:focus {
+    box-shadow:
+      inset 6px 6px 12px #5d49bd,
+      inset -6px -6px 15px #a18bf7,
+      0 0 15px #a88cff;
+    background: #4d3ed4;
+    color: #fff;
+  }
+  #inputHelp {
+    font-size: 0.75rem;
+    color: #b19ee9aa;
+    margin: 6px 0 22px;
+    text-align: left;
+    position: relative;
+    z-index: 1;
+  }
+  button {
+    background: linear-gradient(145deg, #9d7eff, #6249f8);
+    color: white;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border: none;
+    padding: 15px 0;
+    width: 100%;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: background 0.4s ease, box-shadow 0.3s ease;
+    box-shadow:
+      0 4px 8px #7552ffcc,
+      0 0 20px #a186ffcc;
+    position: relative;
+    z-index: 1;
+    user-select: none;
+  }
+  button:hover, button:focus {
+    background: linear-gradient(160deg, #b993ff, #7854ff);
+    box-shadow:
+      0 6px 15px #a98effdd,
+      0 0 30px #ccbbffdd;
+    outline: none;
+  }
+  .output {
+    margin-top: 30px;
+    background: rgba(80, 64, 160, 0.6);
+    padding: 20px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1.3rem;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #ddcff6;
+    box-shadow:
+      inset 0 0 15px #a68affee;
+    position: relative;
+    z-index: 1;
+  }
+  .status {
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-size: 1.5rem;
+    letter-spacing: 1.1px;
+    text-shadow: 0 0 5px #a78cffbb;
+  }
+  .status.low {
+    color: #ff6f85;
+    text-shadow: 0 0 10px #ff4d6daa;
+  }
+  .status.high {
+    color: #ffc16f;
+    text-shadow: 0 0 12px #ffb041cc;
+  }
+  .status.normal {
+    color: #7ef0a4;
+    text-shadow: 0 0 10px #57c282dd;
+  }
+  .instruction {
+    font-weight: 500;
+    font-size: 1.1rem;
+    line-height: 1.35;
+    letter-spacing: 0.05em;
+  }
+  /* Glow pulse effect on result */
+  .output.glow {
+    animation: glowPulse 2.5s infinite alternate;
+  }
+  @keyframes glowPulse {
+    0% {
+      box-shadow:
+        inset 0 0 20px #9f8affee,
+        0 0 35px #805bff55;
+    }
+    100% {
+      box-shadow:
+        inset 0 0 40px #b8aaffdd,
+        0 0 60px #a887ffc4;
+    }
+  }
+  /* Floating animated circles */
+  .floating-circles {
+    pointer-events: none;
+    position: absolute;
+    width: 350px;
+    height: 450px;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    overflow: visible;
+    z-index: 0;
+  }
+  .circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.07;
+    background: #a885ff;
+    box-shadow: 0 0 30px #a88aff, 0 0 50px #a88affaa;
+    animation-timing-function: ease-in-out;
+  }
+  .circle1 {
+    width: 100px;
+    height: 100px;
+    top: 10px;
+    left: 20px;
+    animation: floatUpDown 6s infinite alternate;
+  }
+  .circle2 {
+    width: 70px;
+    height: 70px;
+    top: 150px;
+    left: 240px;
+    background: #9069ff;
+    animation: floatSide 7s infinite alternate-reverse;
+  }
+  .circle3 {
+    width: 130px;
+    height: 130px;
+    top: 300px;
+    left: 50px;
+    background: #b79aff;
+    animation: floatUpDown 8s infinite alternate-reverse;
+  }
+  .circle4 {
+    width: 80px;
+    height: 80px;
+    top: 350px;
+    left: 250px;
+    background: #9b79ff;
+    animation: floatSide 6.7s infinite alternate;
+  }
+  @keyframes floatUpDown {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-20px); }
+  }
+  @keyframes floatSide {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(20px); }
+  }
+</style>
+</head>
+<body>
+  <div class="container" role="main" aria-label="Artificial Pancreas AI Blood Sugar Analyzer">
+    <h1>Artificial Pancreas with AI</h1>
+    <p class="subtitle">Enter your blood sugar level (mg/dL) for instant AI analysis</p>
+
+    <label for="bloodSugarInput">Blood Sugar Level:</label>
+    <input
+      id="bloodSugarInput"
+      type="number"
+      min="20"
+      max="600"
+      step="1"
+      placeholder="e.g. 110"
+      aria-describedby="inputHelp"
+      inputmode="numeric"
+    />
+    <div id="inputHelp" style="font-size:0.8rem; color: #b9aaf8aa; margin-bottom: 22px; text-align: left;">
+      Typical healthy range: 70 - 180 mg/dL
+    </div>
+    <button id="analyzeBtn" aria-live="polite" aria-pressed="false">Analyze</button>
+
+    <div class="output" id="result" aria-live="polite" aria-atomic="true" role="region" tabindex="0" aria-label="Analysis result">
+      <!-- Result will appear here -->
+    </div>
+  </div>
+
+  <div class="floating-circles" aria-hidden="true">
+    <div class="circle circle1"></div>
+    <div class="circle circle2"></div>
+    <div class="circle circle3"></div>
+    <div class="circle circle4"></div>
+  </div>
+
+<script>
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const bloodSugarInput = document.getElementById('bloodSugarInput');
+  const resultDiv = document.getElementById('result');
+
+  // Function to add glow animation class briefly
+  function pulseGlow() {
+    resultDiv.classList.add('glow');
+    setTimeout(() => resultDiv.classList.remove('glow'), 2500);
+  }
+
+  function analyzeBloodSugar(level) {
+    let status = '';
+    let instruction = '';
+
+    // Using typical clinical ranges:
+    // Low: under 70
+    // Normal: 70 - 180
+    // High: above 180
+
+    if (level < 70) {
+      status = 'Low Blood Sugar (Hypoglycemia)';
+      instruction = `Your blood sugar is too low. <strong>Immediate action:</strong> Consume fast-acting carbohydrates such as glucose tablets, fruit juice, or regular soda. Monitor levels closely and consult your healthcare provider if symptoms persist.`;
+    } else if (level <= 180) {
+      status = 'Normal Blood Sugar';
+      instruction = `Your blood sugar level is within a healthy range. Maintain your routine and keep monitoring regularly. Stay hydrated and follow your treatment plan.`;
+    } else {
+      status = 'High Blood Sugar (Hyperglycemia)';
+      instruction = `Your blood sugar is elevated. <strong>Suggested steps:</strong> Check for ketones if possible, stay hydrated, and avoid high-carb foods temporarily. Contact your healthcare provider if you feel unwell or if this persists.`;
+    }
+
+    return {status, instruction};
+  }
+
+  analyzeBtn.addEventListener('click', () => {
+    const val = bloodSugarInput.value.trim();
+    const level = Number(val);
+
+    if (!val || isNaN(level)) {
+      resultDiv.innerHTML = `<div class="status normal">Please enter your blood sugar level as a number.</div>`;
+      resultDiv.focus();
+      return;
+    }
+
+    if (level < 20 || level > 600) {
+      resultDiv.innerHTML = `<div class="status normal">Please enter a realistic blood sugar value between 20 and 600 mg/dL.</div>`;
+      resultDiv.focus();
+      return;
+    }
+
+    const analysis = analyzeBloodSugar(level);
+    const statusClass = analysis.status.includes('Low') ? 'low' : (analysis.status.includes('High') ? 'high' : 'normal');
+
+    resultDiv.innerHTML = `
+      <div class="status ${statusClass}">${analysis.status}</div>
+      <div class="instruction">${analysis.instruction}</div>
+    `;
+
+    pulseGlow();
+    resultDiv.focus();
+  });
+
+  // Enter key triggers the analysis for better UX on mobile
+  bloodSugarInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      analyzeBtn.click();
+    }
+  });
+</script>
+</body>
+</html>
